@@ -81,11 +81,8 @@ jobs:
           command: |
             cd frontend
             npm i
-            npm run test
-      # Checkout code from git
-      # Restore from cache
-      # Your job code here
-                
+            npm run test  
+
   test-backend:
     docker:
       - image: circleci/node:13.8.0
@@ -98,26 +95,33 @@ jobs:
           command: |
             cd backend
             npm i
-            npm run test
-      # Checkout code from git
-      # Restore from cache
-      # Your job code here
-            
-#   scan-frontend:
-#     docker:
-#       # Docker image here
-#     steps:
-#       # Checkout code from git
-#       # Restore from cache
-#       # Your job code here
+            npm run test  
 
-#   scan-backend:
-#     docker:
-#       # Docker image here
-#     steps:
-#       # Checkout code from git
-#       # Restore from cache
-#       # Your job code here
+  scan-frontend:
+    steps:
+      - checkout
+      - restore_cache:
+          keys: [frontend-build]
+      - run:
+          name: frontend scan
+          command: |
+            cd frontend
+            npm i
+            npm audit fix --audit-level=critical            
+
+  scan-backend:
+    docker:
+      - image: circleci/node:13.8.0
+    steps:
+      - checkout
+      - restore_cache:
+          keys: [backend-build]
+      - run:
+          name: backend scan
+          command: |
+            cd backend
+            npm i
+            npm audit fix --audit-level=critical  
 
 #   deploy-infrastructure:
 #     docker:
@@ -294,10 +298,10 @@ workflows:
           requires: [build-frontend]
       - test-backend:
           requires: [build-backend]
-      #- scan-backend:
-       #   requires: [build-backend]
-      #- scan-frontend:
-       #   requires: [build-frontend]
+      - scan-backend:
+          requires: [build-backend]
+      - scan-frontend:
+          requires: [build-frontend]
       #- deploy-infrastructure:
        #   requires: [test-frontend, test-backend, scan-frontend, scan-backend]
         #  filters:
