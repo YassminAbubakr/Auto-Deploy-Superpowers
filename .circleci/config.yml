@@ -119,11 +119,15 @@ jobs:
       - restore_cache:
           keys: [backend-build]
       - run:
-          name: backend scan
+          name: Backend build
           command: |
             cd backend
-            npm i
-            npm audit fix --audit-level=critical  
+            npm install
+      - run:
+          name: Backend scan
+          command: |
+            cd backend
+            npm audit fix --audit-level=critical
 
 #   deploy-infrastructure:
 #     docker:
