@@ -284,11 +284,16 @@ jobs:
       - run:
           name: Install dependencies
           command: |
-            apk add --update ansible openssh-client tar gzip awscli python3
+            apk add --update ansible openssh-client tar gzip python3
+            sudo apt-get install awscli
+            #apk add --no-cache nodejs
+            #apk add --no-cache npm
+            #apk add --no-cache bash
+            #apk add --no-cache curl
             #sudo apt-get update
             #sudo apt-get install python3
             #sudo apt-get install ansible
-            #sudo apt-get install awscli
+            
       - run:
           name: Setup environment
           command: |
