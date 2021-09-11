@@ -178,7 +178,6 @@ jobs:
   configure-infrastructure:
     docker:
       - image: python:3.7-alpine3.11
-    parallelism: 4
     steps:
       - checkout
       - add_ssh_keys:
@@ -203,7 +202,6 @@ jobs:
   run-migrations:
     docker:
       - image: circleci/node:13.8.0
-    parallelism: 4
     steps:
       - checkout
       - run:
