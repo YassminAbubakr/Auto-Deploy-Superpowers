@@ -120,7 +120,7 @@ jobs:
           name: frontend scan
           command: |
             cd frontend
-            npm install
+            npm i
             npm audit fix --audit-level=critical --force            
 
   scan-backend:
@@ -135,7 +135,7 @@ jobs:
           name: backend scan
           command: |
             cd backend
-            npm install
+            npm i
             npm audit fix --audit-level=critical --force
 
   deploy-infrastructure:
@@ -208,7 +208,8 @@ jobs:
           name: Run migrations
           command: |
             cd backend
-            npm install
+            npm i
+            npm audit fix --audit-level=critical --force
             npm run migrations > migrations.log
             cat migrations.log
       - run:
