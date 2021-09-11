@@ -1,1 +1,2 @@
-Url to GitHub repository[URL01] :  https://github.com/YassminAbubakr/UdaPeopleCI-CD
+Url to GitHub repository[URL01]: https://github.com/YassminAbubakr/UdaPeopleCI-CD
+Public URL for your S3 Bucket[URL02]: http://udapeople-0af046d.s3-website-us-east-1.amazonaws.com/#/employees
