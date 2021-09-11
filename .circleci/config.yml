@@ -352,6 +352,10 @@ jobs:
               echo "failed frontend Smoketest"
               return 0
             fi
+      - destroy-environment:
+          workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
+      - revert-migrations:
+          workflow_id: ${CIRCLE_WORKFLOW_ID}
       # Here's where you will add some code to rollback on failure  
 
 #   cloudfront-update:
