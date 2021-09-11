@@ -204,12 +204,13 @@ jobs:
       - image: circleci/node:13.8.0
     steps:
       - checkout
+      - attach_workspace:
+          at: ~/
       - run:
           name: Run migrations
           command: |
             cd backend
             npm i
-            npm audit fix --audit-level=critical --force
             npm run migrations > migrations.log
             cat migrations.log
       - run:
