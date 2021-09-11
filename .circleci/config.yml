@@ -238,17 +238,15 @@ jobs:
 
   deploy-frontend:
     docker:
-      - image: amazon/aws-cli
+      - image: python:3.7-alpine3.11
     steps:
       - checkout
       - run:
           name: Install dependencies
           command: |
             cd frontend
-            apk add --no-cache nodejs
-            apk add --no-cache npm
-            apk add --no-cache bash
-            apk add --no-cache curl
+            apk add --no-cache nodejs npm bash curl
+            # apk add --update tar gzip ansible nodejs npm curl openssh-client python3
             pip install awscli
       - run:
           name: Get backend url
@@ -283,16 +281,9 @@ jobs:
           at: ~/
       - run:
           name: Install dependencies
-          command: |
-            apk add --update ansible openssh-client tar gzip python3
-            sudo apt-get install awscli
-            #apk add --no-cache nodejs
-            #apk add --no-cache npm
-            #apk add --no-cache bash
-            #apk add --no-cache curl
-            #sudo apt-get update
-            #sudo apt-get install python3
-            #sudo apt-get install ansible
+          command: | 
+            apk add --update tar gzip ansible nodejs npm curl openssh-client python3
+            pip install awscli
             
       - run:
           name: Setup environment
