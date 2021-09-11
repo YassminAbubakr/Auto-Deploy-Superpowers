@@ -192,17 +192,6 @@ jobs:
       - run:
           name: Configure server
           command: |
-            echo ENVIRONMENT=production > "backend/.env"
-            echo TYPEORM_CONNECTION=postgres >> "backend/.env"
-            echo TYPEORM_ENTITIES=./src/modules/domain/**/*.entity.ts >> "backend/.env"
-            echo TYPEORM_MIGRATIONS=./src/migrations/*.ts >> "backend/.env"
-            echo TYPEORM_MIGRATIONS_DIR=./src/migrations >> "backend/.env"
-            echo NODE_ENV=production >> "backend/.env"
-            echo TYPEORM_HOST=$TYPEORM_HOST >> "backend/.env"
-            echo TYPEORM_PORT=$TYPEORM_PORT >> "backend/.env"
-            echo TYPEORM_USERNAME=$TYPEORM_USERNAME >> "backend/.env"
-            echo TYPEORM_PASSWORD=$TYPEORM_PASSWORD >> "backend/.env"
-            echo TYPEORM_DATABASE=$TYPEORM_DATABASE >> "backend/.env"
             cd .circleci/ansible
             ansible-playbook -i  inventory.txt configure-server.yml
       - destroy-environment:
@@ -210,22 +199,31 @@ jobs:
 
       # Here's where you will add some code to rollback on failure      
 
-#   run-migrations:
-#     docker:
-#       - image: circleci/node:13.8.0
-#     steps:
-#       # Checkout code from git
-#       - run:
-#           name: Run migrations
-#           command: |
-#             # Your code here
-#             exit 1
-#       - run:
-#           name: Send migration results to memstash
-#           command: |
-#             # Your code here
-#             exit 1
-#      # Here's where you will add some code to rollback on failure      
+  run-migrations:
+    docker:
+      - image: circleci/node:13.8.0
+    steps:
+      - checkout
+      - run:
+          name: Run migrations
+          command: |
+            cd backend
+            npm install
+            npm run migrations > migrations.log
+            cat migrations.log
+      - run:
+          name: Send migration results to memstash
+          command: |
+            echo "CIRCLE_WORKFLOW_ID: ${CIRCLE_WORKFLOW_ID}"
+            grep -q "has been executed successfully\|No migrations are pending" backend/migrations.log
+            if [ $? -eq 0 ]; then
+              echo "Database migration was successful"
+              curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID}" --request PUT --data "1" https://api.memstash.io/values/migration_${CIRCLE_WORKFLOW_ID}
+            else 
+              exit 1;
+            fi
+      - revert-migrations:
+          workflow_id: ${CIRCLE_WORKFLOW_ID}     
 
 #   deploy-frontend:
 #     docker:
@@ -343,8 +341,8 @@ workflows:
              only: [test-feature-branch]
       - configure-infrastructure:
           requires: [deploy-infrastructure]
-      #- run-migrations:
-       #   requires: [configure-infrastructure]
+      - run-migrations:
+          requires: [configure-infrastructure]
       #- deploy-frontend:
        #   requires: [run-migrations]
       #- deploy-backend:
