@@ -39,6 +39,7 @@ jobs:
   build-frontend:
     docker:
       - image: circleci/node:13.8.0
+    parallelism: 2
     steps:
       - checkout
       - restore_cache:
@@ -56,6 +57,7 @@ jobs:
   build-backend:
     docker:
       - image: circleci/node:13.8.0
+    parallelism: 2
     steps:
       - checkout
       - restore_cache:
@@ -73,6 +75,7 @@ jobs:
   test-frontend:
     docker:
       - image: circleci/node:13.8.0
+    parallelism: 2
     steps:
       - checkout
       - restore_cache:
@@ -90,6 +93,7 @@ jobs:
   test-backend:
     docker:
       - image: circleci/node:13.8.0
+    parallelism: 2
     steps:
       - checkout
       - restore_cache:
@@ -107,6 +111,7 @@ jobs:
   scan-frontend:
     docker:
       - image: circleci/node:13.8.0
+    parallelism: 2
     steps:
       - checkout
       - restore_cache:
@@ -121,6 +126,7 @@ jobs:
   scan-backend:
     docker:
       - image: circleci/node:13.8.0
+    parallelism: 2
     steps:
       - checkout
       - restore_cache:
@@ -135,6 +141,7 @@ jobs:
   deploy-infrastructure:
     docker:
       - image: amazon/aws-cli
+    parallelism: 2
     steps:
       - checkout
       - run: yum -y install tar gzip
