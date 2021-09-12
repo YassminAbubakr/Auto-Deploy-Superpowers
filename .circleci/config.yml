@@ -251,8 +251,8 @@ jobs:
       - run:
           name: Get backend url
           command: |
-            BACKEND_IP=$(curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID}" --request GET --data "${BACKEND_URL}" https://api.memstash.io/values/BACKEND_URL)
-            export API_URL="http://${BACKEND_IP}:3030"
+            BACKEND_URL=$(curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID}" --request GET  https://api.memstash.io/values/BACKEND_URL)
+            export API_URL="http://${BACKEND_URL}:3030"
             echo "${API_URL}" >> "frontend/.env"
       - run:
           name: Deploy frontend objects
@@ -332,25 +332,25 @@ jobs:
       - run:
           name: Get backend url
           command: |
-            BACKEND_IP=$(curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID}" --request GET --data "${BACKEND_URL}" https://api.memstash.io/values/BACKEND_URL)
-            API_URL="http://${BACKEND_IP}:3030"
-            
+            BACKEND_URL=$(curl -H "token: ${CIRCLE_WORKFLOW_ID}" --request GET https://api.memstash.io/values/BACKEND_URL)            
+            echo ${BACKEND_URL}
       - run:
           name: Backend smoke test.
           command: |
-            curl $API_URL/api/status
+            BACKEND_URL=$(curl -H "token: ${CIRCLE_WORKFLOW_ID}" --request GET https://api.memstash.io/values/BACKEND_URL)
+            curl -s "${BACKEND_URL}/api/status" 
 
       - run:
           name: Frontend smoke test.
           command: |
-            URL="http://udapeople-${CIRCLE_WORKFLOW_ID:0:7}.s3-website-us-east-1.amazonaws.com#employees"
+            FRONTEND_URL="http://udapeople-${CIRCLE_WORKFLOW_ID:0:7}.s3-website-us-east-1.amazonaws.com#employees"
             if curl -s ${URL} | grep "Welcome"  
             then
               echo "Successful frontend Smoketest"
-              return 1
+              return 0
             else
               echo "failed frontend Smoketest"
-              return 0
+              return 1
             fi
       - destroy-environment:
           workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
