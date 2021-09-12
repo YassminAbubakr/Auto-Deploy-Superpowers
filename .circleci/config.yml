@@ -167,10 +167,21 @@ jobs:
               --query 'Reservations[*].Instances[*].PublicIpAddress' \
               --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
               --output text >> .circleci/ansible/inventory.txt
+              cat .circleci/ansible/inventory.txt
+      - run:
+          name: Fetch and Save Backend URL
+          command: |
+            BACKEND_IP=$(aws ec2 describe-instances \
+              --query 'Reservations[*].Instances[*].PublicIpAddress' \
+              --filters "Name=tag:project,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
+              --output text)
+            echo $BACKEND_IP
+            curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID}" --request PUT --data "http://$BACKEND_IP:3030" https://api.memstash.io/values/BACKEND_URL
+
       - persist_to_workspace:
           root: ~/
           paths:
-            - project/.circleci/ansible/inventory.txt
+            - .circleci/ansible/inventory.txt
       - destroy-environment:
           workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
       # Here's where you will add some code to rollback on failure      
@@ -251,9 +262,8 @@ jobs:
       - run:
           name: Get backend url
           command: |
-            BACKEND_URL=$(curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID}" --request GET  https://api.memstash.io/values/BACKEND_URL)
-            export API_URL="http://${BACKEND_URL}:3030"
-            echo "${API_URL}"
+            export API_URL=$(curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID}" --request GET https://api.memstash.io/values/BACKEND_URL)
+            echo $API_URL
             echo "${API_URL}" >> "frontend/.env"
       - run:
           name: Deploy frontend objects
@@ -333,20 +343,21 @@ jobs:
       - run:
           name: Get backend url
           command: |
-            BACKEND_PI=$(curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID}" --request GET  https://api.memstash.io/values/BACKEND_URL)
-            echo ${BACKEND_PI}
+             BACKEND_URL=$(curl -H "token: ${CIRCLE_WORKFLOW_ID}" --request GET https://api.memstash.io/values/BACKEND_URL)
+            echo ${BACKEND_URL}
       - run:
           name: Backend smoke test.
           command: |
-            BACKEND_PI=$(curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID}" --request GET  https://api.memstash.io/values/BACKEND_URL)
-            echo ${BACKEND_PI}
-            curl -s "${BACKEND_PI}/api/status" 
+            BACKEND_URL=$(curl -H "token: ${CIRCLE_WORKFLOW_ID}" --request GET https://api.memstash.io/values/BACKEND_URL)
+            echo ${BACKEND_URL}
+            curl -s "${BACKEND_URL}/api/status"
 
       - run:
           name: Frontend smoke test.
           command: |
-            FRONTEND_URL="http://udapeople-${CIRCLE_WORKFLOW_ID:0:7}.s3-website-us-east-1.amazonaws.com#employees"
-            if curl -s ${URL} | grep "Welcome"  
+              # test frontend reachability
+            FRONTEND_URL="http://proj3-${CIRCLE_WORKFLOW_ID}.s3-website-us-east-1.amazonaws.com/index.html"
+            if curl -s ${FRONTEND_URL} | grep -q "Welcome"
             then
               echo "Successful frontend Smoketest"
               return 0
