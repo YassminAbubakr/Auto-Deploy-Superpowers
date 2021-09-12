@@ -253,6 +253,7 @@ jobs:
           command: |
             BACKEND_URL=$(curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID}" --request GET  https://api.memstash.io/values/BACKEND_URL)
             export API_URL="http://${BACKEND_URL}:3030"
+            echo "${API_URL}"
             echo "${API_URL}" >> "frontend/.env"
       - run:
           name: Deploy frontend objects
@@ -332,13 +333,14 @@ jobs:
       - run:
           name: Get backend url
           command: |
-            BACKEND_URL=$(curl -H "token: ${CIRCLE_WORKFLOW_ID}" --request GET https://api.memstash.io/values/BACKEND_URL)            
-            echo ${BACKEND_URL}
+            BACKEND_PI=$(curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID}" --request GET  https://api.memstash.io/values/BACKEND_URL)
+            echo ${BACKEND_PI}
       - run:
           name: Backend smoke test.
           command: |
-            BACKEND_URL=$(curl -H "token: ${CIRCLE_WORKFLOW_ID}" --request GET https://api.memstash.io/values/BACKEND_URL)
-            curl -s "${BACKEND_URL}/api/status" 
+            BACKEND_PI=$(curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID}" --request GET  https://api.memstash.io/values/BACKEND_URL)
+            echo ${BACKEND_PI}
+            curl -s "${BACKEND_PI}/api/status" 
 
       - run:
           name: Frontend smoke test.
