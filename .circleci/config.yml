@@ -406,29 +406,48 @@ jobs:
       - image: amazon/aws-cli
     steps:
       - checkout
+      # - run:
+      #     name: Get old stack workflow id
+      #     command: |
+
+      #       if [[ "${STACKS[@]}" =~ "${OldWorkflowID}" ]]
+      #       then
+      #         echo "Destroying-OldWorkFlow: ${OldWorkflowID} "
+      #         aws s3 rb s3://udapeople-${OldWorkflowID} --force
+      #         aws cloudformation delete-stack --stack-name udapeople-backend-${OldWorkflowID}
+      #         aws cloudformation delete-stack --stack-name udapeople-frontend-${OldWorkflowID}
+      #         echo "stack deleted succesfully"
+      #       else
+      #         echo "This is new stack.So there is nothing much to do."
+      #       fi
       - run:
-          name: Get old stack workflow id
+          name: Get the old stack workflow id
           command: |
-            export OldWorkflowID=$(curl -H "Content-Type: text/plain" \
-            -H "token: OldWorkflowID-${CIRCLE_WORKFLOW_ID:0:7}" --request GET\
-             https://api.memstash.io/values/OldWorkflowID)
-            
+            export OldWorkflowID=$(curl -H "token: OldWorkflowID-${CIRCLE_WORKFLOW_ID:0:7}" --request GET \
+            https://api.memstash.io/values/OldWorkflowID)
             export STACKS=($(aws cloudformation list-stacks --query "StackSummaries[*].StackName" \
-            --stack-status-filter CREATE_COMPLETE --no-paginate --output text)) 
-            
+              --stack-status-filter CREATE_COMPLETE --no-paginate --output text))
+            echo $OldWorkflowID > OldWorkflowID.txt
             echo OldWorkflowID: "$OldWorkflowID"
             echo STACKS: "$STACKS"
-            
+      - run:
+          name: Remove old stacks and files
+          command: |
+            OldWorkflowID=$(cat OldWorkflowID.txt)
+            aws cloudformation list-stacks --stack-status "CREATE_COMPLETE" > current_stacks
             if [[ "${STACKS[@]}" =~ "${OldWorkflowID}" ]]
             then
-            echo "Destroying-OldWorkFlow: ${OldWorkflowID} "
-            aws s3 rb s3://udapeople-${OldWorkflowID} --force
-            aws cloudformation delete-stack --stack-name udapeople-backend-${OldWorkflowID}
-            aws cloudformation delete-stack --stack-name udapeople-frontend-${OldWorkflowID}
-            echo "stack deleted succesfully"
-            else
-            echo "This is new stack.So there is nothing much to do."
-            fi
+              # your code here
+              aws s3 rm "s3://udapeople-${OldWorkflowID}" --recursive
+              if grep -q "udapeople-backend-${OldWorkflowID}" current_stacks
+              then
+                aws cloudformation delete-stack --stack-name "udapeople-backend-${OldWorkflowID}"
+              fi
+              if grep -q "udapeople-frontend-${OldWorkflowID}" current_stacks
+              then
+                aws cloudformation delete-stack --stack-name "udapeople-frontend-${OldWorkflowID}"
+              fi
+            fi  
             
 
 workflows:
