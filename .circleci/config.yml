@@ -406,20 +406,6 @@ jobs:
       - image: amazon/aws-cli
     steps:
       - checkout
-      # - run:
-      #     name: Get old stack workflow id
-      #     command: |
-
-      #       if [[ "${STACKS[@]}" =~ "${OldWorkflowID}" ]]
-      #       then
-      #         echo "Destroying-OldWorkFlow: ${OldWorkflowID} "
-      #         aws s3 rb s3://udapeople-${OldWorkflowID} --force
-      #         aws cloudformation delete-stack --stack-name udapeople-backend-${OldWorkflowID}
-      #         aws cloudformation delete-stack --stack-name udapeople-frontend-${OldWorkflowID}
-      #         echo "stack deleted succesfully"
-      #       else
-      #         echo "This is new stack.So there is nothing much to do."
-      #       fi
       - run:
           name: Get the old stack workflow id
           command: |
