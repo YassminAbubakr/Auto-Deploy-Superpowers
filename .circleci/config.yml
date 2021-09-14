@@ -121,8 +121,8 @@ jobs:
           command: |
             cd frontend
             npm i
-            #npm audit fix --audit-level=critical --force 
-            npm audit --audit-level=critical           
+            npm audit fix --audit-level=critical  
+            #npm audit --audit-level=critical           
 
   scan-backend:
     docker:
@@ -137,8 +137,8 @@ jobs:
           command: |
             cd backend
             npm i
-            npm audit --audit-level=critical
-            #npm audit fix --audit-level=critical --force
+            #npm audit --audit-level=critical
+            npm audit fix --audit-level=critical 
 
   deploy-infrastructure:
     docker:
@@ -177,7 +177,7 @@ jobs:
             --data "$BACKEND_IP" https://api.memstash.io/values/BACKEND_URL
 
       - persist_to_workspace:
-          root: .circleci/ansible
+          root: ~/
           paths:
             - project/.circleci/ansible/inventory.txt
             - inventory.txt
@@ -267,7 +267,7 @@ jobs:
             BACKEND_IP=$(curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID:0:7}" --request GET https://api.memstash.io/values/BACKEND_URL)
             export API_URL="http://${BACKEND_IP}:3030"
             echo $API_URL
-            #echo "http://${API_URL}:3030" >> "frontend/.env"
+            echo "${API_URL}" >> "frontend/.env"
       - run:
           name: Deploy frontend objects
           command: |
@@ -314,7 +314,7 @@ jobs:
             echo TYPEORM_USERNAME=$TYPEORM_USERNAME >> ".env"
             echo TYPEORM_PASSWORD=$TYPEORM_PASSWORD >> ".env"
             echo TYPEORM_DATABASE=$TYPEORM_DATABASE >> ".env"
-            ansible-galaxy install weareinteractive.environment
+            #ansible-galaxy install weareinteractive.environment
       - run:
           name: Compress backend files
           command: |
@@ -464,7 +464,7 @@ workflows:
           requires: [run-migrations]
       - smoke-test:
           requires: [deploy-backend, deploy-frontend]
-      # - cloudfront-update:
-      #     requires: [smoke-test]
-      # - cleanup:
-      #     requires: [cloudfront-update]
+      - cloudfront-update:
+          requires: [smoke-test]
+      - cleanup:
+          requires: [cloudfront-update]
