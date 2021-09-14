@@ -308,6 +308,7 @@ jobs:
             echo TYPEORM_USERNAME=$TYPEORM_USERNAME >> ".env"
             echo TYPEORM_PASSWORD=$TYPEORM_PASSWORD >> ".env"
             echo TYPEORM_DATABASE=$TYPEORM_DATABASE >> ".env"
+            ansible-galaxy install weareinteractive.environment
       - run:
           name: Compress backend files
           command: |
@@ -318,9 +319,8 @@ jobs:
           name: Deploy backend
           command: |
             cd .circleci/ansible
-            BACKEND_IP=`cat inventory.txt | head -2 | tail -1`
+            export BACKEND_IP=$(curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID:0:7}" --request GET https://api.memstash.io/values/BACKEND_URL)
             echo "BACKEND_IP: ${BACKEND_IP}"
-            export ANSIBLE_HOST_KEY_CHECKING=False
             ansible-playbook -i  inventory.txt deploy-backend.yml
       - destroy-environment:
           workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
