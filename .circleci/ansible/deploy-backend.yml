@@ -21,5 +21,6 @@
     - TYPEORM_DATABASE: "{{ lookup('env','TYPEORM_DATABASE') }}"
     
   roles:
+    - weareinteractive.environment
     - deploy
     - configure-prometheus-node-exporter
