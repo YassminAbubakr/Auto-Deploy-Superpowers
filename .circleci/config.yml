@@ -121,7 +121,8 @@ jobs:
           command: |
             cd frontend
             npm i
-            npm audit fix --audit-level=critical --force            
+            #npm audit fix --audit-level=critical --force 
+            npm audit --audit-level=critical           
 
   scan-backend:
     docker:
@@ -136,8 +137,8 @@ jobs:
           command: |
             cd backend
             npm i
-            #npm audit --audit-level=critical
-            npm audit fix --audit-level=critical --force
+            npm audit --audit-level=critical
+            #npm audit fix --audit-level=critical --force
 
   deploy-infrastructure:
     docker:
@@ -178,6 +179,7 @@ jobs:
       - persist_to_workspace:
           root: .circleci/ansible
           paths:
+            - project/.circleci/ansible/inventory.txt
             - inventory.txt
 
       - destroy-environment:
