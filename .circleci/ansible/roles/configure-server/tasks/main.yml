@@ -1,30 +1,37 @@
----
-- name: "Update apt packages"
-  become: yes
+- name: "upgrade packages."
+  become: true
   apt:
-    update_cache: yes
-
-- name: "Upgrade packages"
-  become: yes
-  apt:
-    upgrade: yes
-
-- name: Remove dependencies that are no longer required
-  become: yes
-  apt:
-    autoremove: yes
-
-- name: Install NodeJS
-  become: yes
+    upgrade: "yes"
+- name: "install dependencies."
+  become: true
   apt:
     name: ["nodejs", "npm"]
-    state: latest
     update_cache: yes
-
-- name: Install PM2
-  become: yes
+- name: "install pm2"
+  become: true
   npm:
     name: pm2
     global: yes
     production: yes
     state: present
+- name: "copy backend file"
+  become: true
+  copy:
+    src: /root/project/backend
+    dest: /root
+    force: no
+- name: "install npm packages"
+  become: true
+  command: npm install
+  args:
+    chdir: /root/backend
+- name: "compile npm packages"
+  become: true
+  command: npm run build
+  args:
+    chdir: /root/backend
+- name: "start server"
+  become: true
+  command: pm2 start npm -- run start
+  args:
+    chdir: /root/backend/dist
