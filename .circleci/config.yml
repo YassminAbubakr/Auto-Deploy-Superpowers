@@ -137,7 +137,10 @@ jobs:
           name: Ensure back-end infrastructure exists
           command: |
             aws cloudformation deploy --template-file .circleci/files/backend.yml --tags project=udapeople-Backend --stack-name udaPeople-backend-${CIRCLE_WORKFLOW_ID:0:7} --parameter-overrides ID=${CIRCLE_WORKFLOW_ID:0:7}
-            URLS=$(aws ec2 describe-instances --region us-east-1 --query "Reservations[*].Instances[*].PublicIpAddress" --output text)
+            URLS=$(aws ec2 describe-instances \
+              --query 'Reservations[*].Instances[*].PublicIpAddress' \
+              --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
+              --output text)
             echo "url=$URLS"
             curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID:0:7}" --request PUT --data "$URLS" https://api.memstash.io/values/Backendurl_${CIRCLE_WORKFLOW_ID:0:7}
       - run:
@@ -146,7 +149,7 @@ jobs:
             aws cloudformation deploy --template-file .circleci/files/frontend.yml --tags project=udapeople-Frontend --stack-name udaPeople-frontend-${CIRCLE_WORKFLOW_ID:0:7} --parameter-overrides ID=${CIRCLE_WORKFLOW_ID:0:7}
             ARN=$(aws s3 ls)
             echo "ARN=$ARN"
-            curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID:0:7}" --request PUT --data "$ARN" https://api.memstash.io/values/arn_${CIRCLE_WORKFLOW_ID:0:7}
+            curl -H "Content-Type: text/plain" -H "token: arn-${CIRCLE_WORKFLOW_ID:0:7}" --request PUT --data "$ARN" https://api.memstash.io/values/arn_${CIRCLE_WORKFLOW_ID:0:7}
       - run:
           name: Add back-end ip to ansible inventory
           command: |
@@ -209,6 +212,8 @@ jobs:
             echo "$URL" >> inventory.txt
             cat inventory.txt
             ansible-playbook -i inventory.txt configure-server.yml
+      - destroy-environment:
+          workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
 
   run-migrations:
     docker:
