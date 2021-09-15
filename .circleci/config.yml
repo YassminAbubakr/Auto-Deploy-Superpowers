@@ -15,8 +15,8 @@ commands:
           command: |
             echo "Destroying environments"
             aws s3 rm s3://udapeople-<< parameters.workflow_id >> --recursive
-            aws cloudformation delete-stack --stack-name udaPeopleBack-<< parameters.workflow_id >>
-            aws cloudformation delete-stack --stack-name udaPeopleFront-<< parameters.workflow_id >>
+            aws cloudformation delete-stack --stack-name udaPeople-backend-<< parameters.workflow_id >>
+            aws cloudformation delete-stack --stack-name udaPeople-frontend-<< parameters.workflow_id >>
 
   revert-migrations:
     description: Revert the last migration if successfully run in the current workflow.
@@ -84,6 +84,9 @@ jobs:
             cd frontend
             npm i
             npm run test
+      - save_cache:
+          paths: [frontend/node_modules]
+          key: frontend-build
             
   test-backend:
     docker:
@@ -98,7 +101,10 @@ jobs:
           command: |
             cd backend
             npm i
-            npm run test 
+            npm run test
+      - save_cache:
+          paths: [backend/node_modules]
+          key: backend-build 
 
   scan-frontend:
     docker:
